@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+    <meta charset="UTF-8"/>
+    <title>分页</title>
+    <script src="//cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script>
+    <script src="//cdn.bootcss.com/bootstrap/3.3.1/js/bootstrap.min.js"></script>
+    <script src="http://oemqn1ymm.bkt.clouddn.com/page/bootstrap-pagination.min.js"></script>
+    <script src="//cdn.bootcss.com/angular.js/1.5.5/angular.js"></script>
+    <link href="//cdn.bootcss.com/bootstrap/3.3.1/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="http://oemqn1ymm.bkt.clouddn.com/page/bootstrap-pagination.min.css" rel="stylesheet"/>
+</head>
+<body ng-controller="pageCtrl">
+
+<table class="table table-bordered table-striped">
+
+    <thead>
+    <tr>
+        <th>id号</th>
+        <th>标题</th>
+        <th>内容</th>
+        <th>是否删除</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr ng-repeat="blog in blogsContent">
+        <td>{{blog.id}}</td>
+        <td>{{blog.title}}</td>
+        <td>{{blog.title}}</td>
+        <td>{{blog.deleted}}</td>
+    </tr>
+    </tbody>
+</table>
+
+<nav class="text-center">
+    <ul id="demo2" class="pagination">
+    </ul>
+</nav>
+
+<script>
+    var app = angular.module('myApp', []);
+    app.controller('pageCtrl', function ($scope, $http) {
+        $scope.fetchUsersList = function () {
+            $http.get("/page/showpage")
+                    .success(function (blogs) {
+                        $scope.blogsContent = blogs.content;
+                        $scope.page(blogs);
+                    });
+        };
+
+        $scope.fetchUsersList();
+
+        $scope.page = function (all) {
+
+            var demo2 = BootstrapPagination($("#demo2"), {
+                layoutScheme: "lefttext,pagesizelist,firstpage,prevgrouppage,prevpage,pagenumber,nextpage,nextgrouppage,lastpage,pageinput,righttext",
+//记录总数。
+                total: all.totalElements,
+//分页尺寸。指示每页最多显示的记录数量。
+
+                pageSize: all.size,
+//当前页索引编号。从其开始（从0开始）的整数。
+                pageIndex: all.number,
+//指示分页导航栏中最多显示的页索引数量。
+                pageGroupSize: 5,
+//位于导航条左侧的输出信息格式化字符串
+                leftFormateString: "本页{count}条记录/共{total}条记录",
+//位于导航条右侧的输出信息格式化字符串
+                rightFormateString: "第{pageNumber}页/共{totalPages}页",
+//页码文本格式化字符串。
+                pageNumberFormateString: "{pageNumber}",
+//分页尺寸输出格式化字符串
+                pageSizeListFormateString: "每页显示{pageSize}条记录",
+//上一页导航按钮文本。
+                prevPageText: "上一页",
+//下一页导航按钮文本。
+                nextPageText: "下一页",
+//上一组分页导航按钮文本。
+                prevGroupPageText: "上一组",
+//下一组分页导航按钮文本。
+                nextGroupPageText: "下一组",
+//首页导航按钮文本。
+                firstPageText: "首页",
+//尾页导航按钮文本。
+                lastPageText: "尾页",
+//设置页码输入框中显示的提示文本。
+                pageInputPlaceholder: "GO",
+//接受用户输入内容的延迟时间。单位：毫秒
+                pageInputTimeout: 500,
+//分页尺寸列表。
+                pageSizeList: [10, 20, 50, 100],
+//当分页更改后引发此事件。
+                pageChanged: function (pageIndex, pageSize) {
+                    $http({
+                        method: 'get',
+                        url: '/page/showpage',
+                        params: {page: pageIndex, size: pageSize}
+                    }).success(function (blogs) {
+                        $scope.blogsContent = blogs.content;
+                        $scope.page(blogs);
+                    });
+                }
+            });
+        };
+    });
+</script>
+</body>
+</html>
